@@ -1,0 +1,7 @@
+# arquivo do python
+*.pyc
+
+# abmientes virtuais
+venv
+.venv
+
