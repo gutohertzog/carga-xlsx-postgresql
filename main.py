@@ -1,48 +1,55 @@
 '''
-primeira versão do script para realizar a carga
+v.1.1
+
+é esperado que o arquivo venha com 9 colunas [0..8],
+sendo apenas as duas abaixo importantes, por hora.
+    - [4] cpf
+    - [6] situação
 '''
+
 import time
 import openpyxl
 
-def le_xlsx(arquivo:str) -> list:
-    ''' abre, lê e salva numa lista o conteúdo do arquivo xlsx '''
-    planilha = openpyxl.load_workbook(arquivo)
-    aba = planilha.active
+inicio = time.time()  # cronômetro tempo de execução
 
-    matrix:list = []
+ARQ_SQL = 'atualiza.sql'
+ARQ_XLSX = 'arquivo-carga.xlsx'
 
-    for linha in aba.iter_rows(values_only=True):
-        matrix.append(list(linha))
+planilha = openpyxl.load_workbook(ARQ_XLSX)
+aba = planilha.active
 
-    return matrix
+matrix = []
+for linha in aba.iter_rows(values_only=True):
+    matrix.append(linha)
 
+# a partir da matrix, cria todas as queries
+queries = []
+for linha in matrix:
+    # descara os cabeçalhos
+    if len(linha < 8):
+        continue
+    if len(linha[4]) <= 3:
+        continue
 
-if __name__ == '__main__':
-    ''' cria as queries para serem executadas no bd a partir do pgAdmin '''
-    inicio = time.time()  # cronômetro
+    if linha[6] == 'ATIVO':
+        sit = 2
+    elif linha[6] == 'INATIVO':
+        sit = 4
+    elif linha[6] == 'SEM INFORMACAO':
+        sit = 5
+    else:
+        print('\n\n\t\terro de vínculo desconhecido\n')
+        print(f'{linha = }\n')
+        exit()
 
-    nome_arq = 'arquivo-carga.xlsx'
+    cpf = str(linha[4]).zfill(11)
+    query = f'update <tabela> set vinculo = {sit} '
+    query += f"where cpf = '{cpf}' and curso_id in (5,6);"
 
-    matrix = le_xlsx(nome_arq)
+with open(ARQ_SQL, 'w', encoding='utf-8') as arq:
+    for query in queries:
+        arq.write(query + '\n')
 
-    # a partir da matrix, cria um arquivo .sql com todas as queries de
-    # atualização dos registros
-    with open('atualiza.sql', 'w', encoding='utf-8') as arq:
-        for linha in matrix[4:]:
-            if linha[6] == 'ATIVO':
-                sit = 2
-            elif linha[6] == 'INATIVO':
-                sit = 4
-            elif linha[6] == 'SEM INFORMACAO':
-                sit = 5
-            else:
-                sit = None
-                print(f'erro na situação {linha =}')
-                exit()
-            query = f'update <tabela> set vinculo = {sit} '
-            query += f"where cpf = '{linha[4]:0>11}' and curso_id in (5,6);"
-            arq.write(query + '\n')
-
-    fim = time.time()
-    print(f'terminado em {fim - inicio} segundos')
+fim = time.time()
+print(f'terminado em {fim - inicio:.2f} segundos')
 
