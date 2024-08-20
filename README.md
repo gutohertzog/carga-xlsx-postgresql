@@ -11,4 +11,3 @@ Bibliotecas :
 - psycopg2 : usado para realizar a conexão com o banco de dados PostgreSQL;
 
 PS.: por motivos de segurança, nomes de tabelas e campos serão generalizados.
-

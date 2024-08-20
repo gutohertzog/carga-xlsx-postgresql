@@ -29,10 +29,16 @@ for linha in aba.iter_rows(values_only=True):
 contador = 0
 try:
     print('\nestabelecendo conexão com o banco de dados\n')
-    usuario = input('\tdigite o usuário : ')
-    senha = getpass('\tdigite a senha : ')
-    ip_server = input('\tdigite o IP : ')
-    banco = input('\tdigite o banco : ')
+
+    # "pausa" o cronômetro durante os inputs
+    parcial = time.time() - inicio
+
+    usuario = input('  -> digite o usuário : ')
+    senha = getpass('  -> digite a senha : ')
+    ip_server = input('  -> digite o IP : ')
+    banco = input('  -> digite o banco : ')
+
+    inicio = time.time()  # reinicia o cronômetro
     porta = 5432
 
     conexao = psycopg2.connect(
@@ -61,14 +67,14 @@ try:
             raise TypeError(linha)
 
         cpf = str(linha[4]).zfill(11)
-        query = 'update <tabela> set vinculo = %s'
+        query = 'update <tabela> set vinculo = %s '
         query += 'where cpf = %s and curso_id in (5,6)'
 
         cursor.execute(query, (vinc, cpf))
         contador += cursor.rowcount
 
-    coexao.commit()
-    print('operação finalizada')
+    conexao.commit()
+    print('\nsalvando as alterações no banco')
 
     cursor.close()
     conexao.close()
@@ -78,10 +84,12 @@ except TypeError as erro:
     print('\n\t\terro de vínculo desconhecido\n')
     print(f'{erro = }\n')
 
-except (Exception, psycopg2.Error) as erro:
+except Exception as erro:
     print('\n\terro ao tentar atualizar no banco\n')
     print(f'{erro = }\n')
 
-fim = time.time()
-print(f'terminado em {fim - inicio:.2f} segundos')
+print(f'\nforam atualizados {contador} registros')
 
+fim = time.time() - inicio
+tempo_execucao = parcial + fim
+print(f'terminado em {tempo_execucao:.2f} segundos')
