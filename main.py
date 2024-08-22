@@ -1,10 +1,10 @@
 '''
-v.1.2
+v.1.3
 
 é esperado que o arquivo venha com 9 colunas [0..8],
 sendo apenas as duas abaixo importantes, por hora.
-    - [4] cpf
-    - [6] vínculo
+    - [4] cpf (str | int)
+    - [6] vínculo (str)
 '''
 
 import time
@@ -34,9 +34,9 @@ try:
     parcial = time.time() - inicio
 
     usuario = input('  -> digite o usuário : ')
-    senha = getpass('  -> digite a senha : ')
-    ip_server = input('  -> digite o IP : ')
-    banco = input('  -> digite o banco : ')
+    senha = getpass('  -> digite a senha   : ')
+    ip_server = input('  -> digite o IP      : ')
+    banco = input('  -> digite o banco   : ')
 
     inicio = time.time()  # reinicia o cronômetro
     porta = 5432
@@ -55,7 +55,8 @@ try:
     for linha in matrix:
         # descarta os cabeçalhos
         if isinstance(linha[4], str):
-            continue
+            if not linha[4].isdigit():
+                continue
 
         if linha[6] == 'ATIVO':
             vinc = 2
